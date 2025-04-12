@@ -6,7 +6,7 @@ from urllib.request import urlopen
 from werkzeug.utils import secure_filename
 import os
 import pymysql
-connection=pymysql.connect(host="sql7.freesqldatabase.com",user="sql7770379",password="zsJSBacLzW",database="sql7770379")
+connection=pymysql.connect(host="localhost",user="root",password="",database="Kima")
 # create an application
 app=Flask(__name__)
 app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
@@ -19,7 +19,7 @@ app.secret_key="dbsbdbfdfdbvjdbvbjbjvjjbv"
 @app.route("/") 
 def main():
         # create some code to fetch products
-    connection=pymysql.connect(host="sql7.freesqldatabase.com",user="sql7770379",password="zsJSBacLzW",database="sql7770379")
+    connection=pymysql.connect(host="localhost",user="root",password="",database="Kima")
     #  define the sql querry to be executed
     clothessql="select * from products where product_category ='clothes'"
     # sql
@@ -125,15 +125,15 @@ def signup():
         confirm_password=request.form['confirm_password']
         # validation checks
         if " " in username:
-            return render_template("signup.html",header="username  must have one word")
+            return render_template("signup.html",error="username  must have one word")
         elif "@" not in email:
-            return render_template("signup.html",header="Email Must Have @")
+            return render_template("signup.html",error="Email Must Have @")
         elif not phone.startswith("+254"):
-            return render_template("signup.html",header="Phone Must start with 254***")
+            return render_template("signup.html",error="Phone Must start with 254***")
         elif len(password)<8:
-            return render_template("signup.html",header="Password must be atleast 8 characters")
+            return render_template("signup.html",error="Password must be atleast 8 characters")
         elif password != confirm_password:
-            return render_template("signup.html",header="Password Mismatch.Please Confirm Password")
+            return render_template("signup.html",error="Password Mismatch.Please Confirm Password")
         else:
             sql="insert into users(username,email,phone,password)VALUES(%s,%s,%s,%s)"
             #    create cursor -cursor is used to execute sql querry
@@ -169,7 +169,7 @@ def signin():
             # check if there is a user with the details
             if cursor.rowcount==0:
                  #link session l
-                return render_template("signin.html",header="No such user Account.Please Try Again")
+                return render_template("signin.html",error="No such user Account.Please Try Again")
             else:
                 session['key'] = email
                 return redirect("/")
@@ -301,5 +301,4 @@ def mpesa_payment():
         return render_template("complete.html")
                
 
-if __name__=='__main__':
-    app.run()
+app.run(debug=True)

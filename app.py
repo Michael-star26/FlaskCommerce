@@ -301,4 +301,4 @@ def mpesa_payment():
         return render_template("complete.html")
                
 
-app.run(debug=True)
+app.run(port=5050)

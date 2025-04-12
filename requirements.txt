@@ -47,7 +47,6 @@ python-dateutil==2.8.2
 python-engineio==4.9.0
 python-socketio==5.11.1
 pytz==2024.1
-pywin32==308
 pyzmq==26.2.0
 requests==2.32.3
 schema==0.7.7

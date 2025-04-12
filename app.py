@@ -1,8 +1,16 @@
 from flask import *
+UPLOAD_FOLDER='./static/files/images'
+PROFILE_UPLOAD_FOLDER='./static/files/profilePic'
+ALLOWED_EXTENSIONS={'txt','mp4','MP4',"jpg", "JPG", 'png', 'PNG', 'gif', 'GIF', 'tiff', 'TIFF', 'heic','HEIC', 'jpeg', 'JPEG', 'jpg', 'JPG', 'jpe', 'JPE', 'jffif', 'JFFIF', 'bmp', 'BMP', 'dib', 'DIB','webp'}
+from urllib.request import urlopen
+from werkzeug.utils import secure_filename
+import os
 import pymysql
-connection=pymysql.connect(host="localhost",user="root",password="",database="Kima")
+connection=pymysql.connect(host="sql7.freesqldatabase.com",user="sql7770379",password="zsJSBacLzW",database="sql7770379")
 # create an application
-app =Flask(__name__)
+app=Flask(__name__)
+app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
+app.config['PROFILE_UPLOAD_FOLDER']=PROFILE_UPLOAD_FOLDER
 #create a route
 # @app.route("/") 
 # def main():
@@ -11,7 +19,7 @@ app.secret_key="dbsbdbfdfdbvjdbvbjbjvjjbv"
 @app.route("/") 
 def main():
         # create some code to fetch products
-    connection=pymysql.connect(host="localhost",user="root",password="",database="Kima") 
+    connection=pymysql.connect(host="sql7.freesqldatabase.com",user="sql7770379",password="zsJSBacLzW",database="sql7770379")
     #  define the sql querry to be executed
     clothessql="select * from products where product_category ='clothes'"
     # sql
@@ -32,7 +40,8 @@ def main():
     cursor_detergents.execute(sql_detergents)
     cursor_laptops.execute(sql_laptops)
     # check if there's clithes in the database
-    if clothescursor.rowcount==0:
+    # clothescursor.rowcount == 0 & cursor_laptops.rowcount == 0 & cursor_detergents.rowcount == 0
+    if 1!=1:
         return render_template("home.html",message="No Products Available")
     else: #you can fetch one, fetch many...
         clothe=clothescursor.fetchall() #create a variable to store clothes in this case ,myvariable
@@ -80,12 +89,12 @@ def vendor():
         confirm_password=request.form['confirm_password']
         # validation checks
         if "@" not in email:
-            return render_template("vendor.html",error="Email Must Have @")
+            return render_template("vendor.html",header="Email Must Have @")
        
         elif len(password)<8:
-            return render_template("vendor.html",error="Password must be atleast 8 characters")
+            return render_template("vendor.html",header="Password must be atleast 8 characters")
         elif password != confirm_password:
-            return render_template("vendor.html",error="Password Mismatch.Please Confirm Password")
+            return render_template("vendor.html",header="Password Mismatch.Please Confirm Password")
         else:
             sql="insert into vendors(firstname,email,lastname,password,town)VALUES(%s,%s,%s,%s,%s)"
             #    create cursor -cursor is used to execute sql querry
@@ -116,15 +125,15 @@ def signup():
         confirm_password=request.form['confirm_password']
         # validation checks
         if " " in username:
-            return render_template("signup.html",error="username  must have one word")
+            return render_template("signup.html",header="username  must have one word")
         elif "@" not in email:
-            return render_template("signup.html",error="Email Must Have @")
+            return render_template("signup.html",header="Email Must Have @")
         elif not phone.startswith("+254"):
-            return render_template("signup.html",error="Phone Must start with 254***")
+            return render_template("signup.html",header="Phone Must start with 254***")
         elif len(password)<8:
-            return render_template("signup.html",error="Password must be atleast 8 characters")
+            return render_template("signup.html",header="Password must be atleast 8 characters")
         elif password != confirm_password:
-            return render_template("signup.html",error="Password Mismatch.Please Confirm Password")
+            return render_template("signup.html",header="Password Mismatch.Please Confirm Password")
         else:
             sql="insert into users(username,email,phone,password)VALUES(%s,%s,%s,%s)"
             #    create cursor -cursor is used to execute sql querry
@@ -160,7 +169,7 @@ def signin():
             # check if there is a user with the details
             if cursor.rowcount==0:
                  #link session l
-                return render_template("signin.html",error="No such user Account.Please Try Again")
+                return render_template("signin.html",header="No such user Account.Please Try Again")
             else:
                 session['key'] = email
                 return redirect("/")
@@ -175,7 +184,58 @@ def signin():
     # @app.route("/about")
     # def about():
     #     return render_template("about.html")
-    
+
+def allowedFiles(filename):
+    return '.' in filename and filename.rsplit('.',1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/admin/addProduct',methods=['POST','GET'])
+def addProduct():
+    if request.method=='POST':
+        product_name=request.form['product_name']
+        product_desc=request.form.get('product_desc')
+        product_cost=request.form['product_cost']
+        product_category=request.form['product_category']
+        file = request.files['files']
+        
+        
+            
+        if  not product_name:
+            return render_template('addProduct.html',header='Error',content='The value you entered is invalid')
+        elif not product_desc:
+            return render_template('addProduct.html',header='Error',content='The value you entered is invalid')
+        elif not product_cost:
+            return render_template('addProduct.html',header='Error',content='The value you entered is invalid')
+        elif not product_category:
+            return render_template('addProduct.html',header='Error',content='The value you entered is invalid')
+        elif file.filename=='':
+            return render_template('addProduct.html',header='Error',content='No file chosen')
+        elif not allowedFiles(file.filename):
+            return render_template("addProduct.html",header='Error', content="Unsupported file type")
+        elif "_" in file.filename:
+            return render_template("addProduct.html",header='Error', content="File name should not contain underscore")
+        elif " " in file.filename:
+            return render_template("addProduct.html",header='Error', content="File name should not contain space")
+        else:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            media=file.filename
+            from image_processing import images
+            mymedia=images(media)
+            
+            # old_name=f"./static/files/images/{media}"
+            # new=f"./static/files/images/{mymedia}"
+            # os.rename(old_name,new)
+            # product_image_name=mymedia.replace("'","")
+            product_image_name=media
+            sql="insert into products(product_name,product_desc,product_cost,product_category,product_image_name) VALUES(%s,%s,%s,%s,%s)"
+            cursor=connection.cursor()
+            cursor.execute(sql,(product_name,product_desc,product_cost,product_category,product_image_name))
+            connection.commit()
+            return render_template('addProduct.html',header='Success',content='A product was successfully added')
+    else:
+        return render_template('addProduct.html',header='Add A Product',content='Use this form to add products to the site')
+
+
 @app.route('/logout')
 def logout():
     session.clear()

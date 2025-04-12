@@ -6,7 +6,7 @@ from urllib.request import urlopen
 from werkzeug.utils import secure_filename
 import os
 import pymysql
-connection=pymysql.connect(host="localhost",user="root",password="",database="Kima")
+connection=pymysql.connect(host="sql7.freesqldatabase.com",user="sql7770379",password="zsJSBacLzW",database="sql7770379")
 # create an application
 app=Flask(__name__)
 app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
@@ -19,7 +19,7 @@ app.secret_key="dbsbdbfdfdbvjdbvbjbjvjjbv"
 @app.route("/") 
 def main():
         # create some code to fetch products
-    connection=pymysql.connect(host="localhost",user="root",password="",database="Kima")
+    connection=pymysql.connect(host="sql7.freesqldatabase.com",user="sql7770379",password="zsJSBacLzW",database="sql7770379")
     #  define the sql querry to be executed
     clothessql="select * from products where product_category ='clothes'"
     # sql
@@ -301,4 +301,5 @@ def mpesa_payment():
         return render_template("complete.html")
                
 
-app.run(debug=True)
+if __name__=='__main__':
+    app.run()
